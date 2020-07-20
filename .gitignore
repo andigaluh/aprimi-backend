@@ -23,5 +23,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-/resources
+/resources/static/assets/tmp/*
+/resources/static/assets/tmp/uploads/carousel/*
+/resources/static/assets/tmp/uploads/event/files/*
+/resources/static/assets/tmp/uploads/event/thumbnail/*
+/resources/static/assets/tmp/uploads/logo/*
+/resources/static/assets/tmp/uploads/media/*
+/resources/static/assets/tmp/uploads/news/thumbnail/*
+
+resources/static/assets/tmp/*
+resources/static/assets/tmp/uploads/carousel/*
+resources/static/assets/tmp/uploads/event/files/*
+resources/static/assets/tmp/uploads/event/thumbnail/*
+resources/static/assets/tmp/uploads/logo/*
+resources/static/assets/tmp/uploads/media/*
+resources/static/assets/tmp/uploads/news/thumbnail/*
 resources
