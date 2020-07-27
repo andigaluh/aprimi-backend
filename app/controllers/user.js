@@ -188,6 +188,35 @@ exports.updateMe = (req, res) => {
     });
 };
 
+// Update and save an user by login
+exports.updatePasswordByMe = (req, res) => {
+  //const id = req.params.id;
+  const id = req.userId;
+
+  User.update(
+    { password: bcrypt.hashSync(req.body.password, 8) },
+    {
+      where: { id: id },
+    }
+  )
+    .then((num) => {
+      if (num == 1) {
+        res.send({
+          message: "Password was updated successfully.",
+        });
+      } else {
+        res.send({
+          message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(400).send({
+        message: "Error updating User with id=" + id,
+      });
+    });
+};
+
 // Delete user by login
 exports.deleteMe = (req, res) => {
   //const id = req.params.id;
@@ -320,3 +349,32 @@ exports.komiteBoard = (req, res) => {
 exports.adminBoard = (req, res) => {
   res.status(200).send("Admin Content.");
 };
+
+exports.checkPassword = (req, res) => {
+  const id = req.userId;
+  const oldPassword = req.body.oldPassword;
+  User.findByPk(id, {
+    attributes: [
+      "password",
+    ]
+  }).then((data) => {
+    var passwordIsValid = bcrypt.compareSync(oldPassword, data.password);
+
+    if (!passwordIsValid) {
+      return res.status(401).send({
+        error: 1,
+        status: 0,
+        message: "Invalid current password!",
+      });
+    }
+      res.send({
+        error: 0,
+        status: 1,
+        message: "Valid password!",
+      });
+    }).catch((err) => {
+      res.status(400).send({
+        message: err,
+      });
+    });
+}

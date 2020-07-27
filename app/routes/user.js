@@ -13,11 +13,17 @@ module.exports = (app) => {
   // Update a User with id
   router.put("/me", [authJwt.verifyToken], users.updateMe);
 
+  // Update a Password User with id
+  router.put("/updatePassword", [authJwt.verifyToken], users.updatePasswordByMe);
+
   // Delete a User with id
   router.delete("/me", [authJwt.verifyToken], users.delete);
 
   // Logout
   router.put("/logout", [authJwt.verifyToken], users.logout);
+
+   // Retrieve a single User with id
+  router.post("/checkPassword", [authJwt.verifyToken], users.checkPassword);
 
   app.use("/users", router);
 };
