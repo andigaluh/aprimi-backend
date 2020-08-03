@@ -16,5 +16,16 @@ module.exports = (app) => {
   // Read all news
   router.get("/:id", news.findOne);
 
+  // Read all news by User
+  router.get("/list/me", [authJwt.verifyToken, authJwt.isKomite],news.findAllByMe);
+
+  router.post("/me", [authJwt.verifyToken, authJwt.isKomite], news.create);
+
+  // Update news by id
+  router.put("/:id", [authJwt.verifyToken, authJwt.isKomite], news.updateByMe);
+
+  // Delete news by me id 
+  router.delete("/:id", [authJwt.verifyToken, authJwt.isKomite], news.deleteByMe);
+
   app.use("/news", router);
 };

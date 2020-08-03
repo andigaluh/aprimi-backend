@@ -4,8 +4,17 @@ const { users } = require("../models");
 const Event_registration = db.event_registration;
 const Exam = db.exam;
 const Event = db.event;
+const nodemailer = require('nodemailer')
 
 const Op = db.Sequelize.Op;
+
+/* var smtpTransport = nodemailer.createTransport("SMTP", {
+  service: "Gmail",
+  auth: {
+    user: "andy13galuh@gmail.com",
+    pass: "k0mun1s#2019",
+  },
+}); */
 
 // Create and Save a new Event_reg
 exports.create = async (req, res) => {
@@ -55,15 +64,36 @@ exports.create = async (req, res) => {
     };
 
     // Save news in the database
-    Event_registration.create(registration)
-        .then((data) => {
-            res.send(data);
-        })
-        .catch((err) => {
+    Event_registration.count({
+        where: {
+            user_id: userId,
+            event_id: eventId
+        }   
+    }).then(
+        (data) => {
+            if (data > 0) {
+                res.status(400).send({
+                    message: "You are already register this event."
+                })
+            } else {
+                Event_registration.create(registration)
+                    .then((data) => {
+                        res.send(data);
+                    })
+                    .catch((err) => {
+                        res.status(400).send({
+                            message: err.message || "Some error occurred while creating the Registration.",
+                        });
+                    });
+            }
+        }
+    ).catch(
+        (err) => {
             res.status(400).send({
                 message: err.message || "Some error occurred while creating the Registration.",
             });
-        });
+        }
+    )
 };
 
 // Read my Registration
@@ -84,7 +114,8 @@ exports.myRegistration = (req, res) => {
                 as: "exam",
                 attributes:["id", "code", "title"]
             }
-        ]
+        ],
+        order: [['id', 'DESC']]
     }).then((result) => {
         res.send(result)
     }).catch((error) => {
@@ -167,111 +198,6 @@ exports.updateMyRegistration = (req, res) => {
         }
     })
 }
-
-// Update and save an event registration
-/* exports.update = (req, res) => {
-    const id = req.params.id;
-
-    Event_reg.update(req.body, {
-        where: { id: id },
-    })
-        .then((num) => {
-            if (num == 1) {
-                res.send({
-                    message: "Event_reg was updated successfully.",
-                });
-            } else {
-                res.send({
-                    message: `Cannot update Event_reg with id=${id}. Maybe Event_reg was not found or req.body is empty!`,
-                });
-            }
-        })
-        .catch((err) => {
-            res.status(400).send({
-                message: "Error updating Event_reg with id=" + id,
-            });
-        });
-}; */
-
-// Read event registration by id
-/* exports.findOne = async (req, res) => {
-    const id = req.params.id;
-
-    Event_reg.findByPk(id, {
-        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt"],
-        include: [{
-            model: Event_reg_category,
-            as: "news_category",
-            attributes: ["id", "title"]
-        }, {
-            model: users,
-            as: "created_user",
-            attributes: ["id", "name"]
-        }]
-    })
-        .then((data) => {
-            res.send(data);
-        })
-        .catch((err) => {
-            res.status(400).send({
-                message: "Error retrieving Event_reg with id=" + id,
-            });
-        });
-}; */
-
-// Read all event registration
-/* exports.findAll = (req, res) => {
-    const title = req.query.title;
-    var condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
-
-    Event_reg.findAll({
-        where: condition,
-        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt"],
-        include: [{
-            model: Event_reg_category,
-            as: "news_category",
-            attributes: ["id", "title"]
-        }, {
-            model: users,
-            as: "created_user",
-            attributes: ["id", "name"]
-        }]
-
-    })
-        .then((data) => {
-            res.send(data);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving event registration.",
-            });
-        });
-}; */
-
-// Delete event registration by id
-/* exports.delete = (req, res) => {
-    const id = req.params.id;
-
-    Event_reg.destroy({
-        where: { id: id },
-    })
-        .then((num) => {
-            if (num == 1) {
-                res.send({
-                    message: "Event registration was deleted successfully!",
-                });
-            } else {
-                res.send({
-                    message: `Cannot delete Event registration with id=${id}. Maybe Event registration was not found!`,
-                });
-            }
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: "Could not delete Event registration with id=" + id,
-            });
-        });
-}; */
 
 // Read all Registration
 exports.allRegistration = (req, res) => {
@@ -416,4 +342,42 @@ exports.delete = (req, res) => {
                 message: "Could not delete Event registration with id=" + id,
             });
         });
+};
+
+exports.confimation = (req, res) => {
+    try {
+        console.log(req.file);
+        const id = req.params.id;
+        const splitUrl = req.url.split("/")
+
+        if (req.file == undefined) {
+            return res.send(`You must select a file.`);
+        }
+
+        Event_registration.findByPk(id, { attributes: ["confirmation_image"] }).then((result) => {
+
+            if (result) {
+                fs.unlink(__basedir + "/resources/static/assets/uploads/" + splitUrl[1] + "/" + splitUrl[3] + "/" + result.confirmation_image, () => { });
+            }
+
+            //const thumbnailName = `${Date.now()}-${req.file.originalname}`;
+            const thumbnailName = `${id}-${req.file.originalname}`;
+            Event_registration.update({ confirmation_image: thumbnailName.toLowerCase(), is_confirmation: 1, confirmation_date: Date(), confirmation_user_id: req.userId }, { where: { id: id } })
+                .then((image) => {
+                    return res.send(`File has been uploaded.`);
+                })
+                .catch((error) => {
+                    return res.status(400).send(`Error when upload new image ${error}`);
+                });
+
+        }).catch((error) => {
+            return res.status(400).send(`Error fetch old image ${error}`);
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res
+            .status(400)
+            .send(`Error when trying upload images: ${error}`);
+    }
 };

@@ -1,6 +1,7 @@
 const { authJwt } = require("../middlewares");
 const event = require("../controllers/event.js");
 const event_registration = require("../controllers/event_reg.js");
+const upload = require("../middlewares/upload");
 
 module.exports = (app) => {
     var router = require("express").Router();
@@ -32,14 +33,8 @@ module.exports = (app) => {
     // Delete my registration by id
     router.delete("/registration/me/:id", [authJwt.verifyToken], event_registration.deleteMyRegistration);
 
-    // Retrieve a single User with id
-    //router.get("/me", [authJwt.verifyToken], event.findMe);
-
-    // Update a User with id
-    //router.put("/me", [authJwt.verifyToken], event.updateMe);
-
-    // Delete a User with id
-    //router.delete("/me", [authJwt.verifyToken], event.delete);
+    // Update image confirmation by id
+    router.post("/confirmation/:id/thumbnail", [authJwt.verifyToken, upload.single("confirmation_image")], event_registration.confimation);
 
     app.use("/event", router);
 };

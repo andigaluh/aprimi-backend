@@ -14,6 +14,7 @@ const contact = require("../controllers/contact.js");
 const carousel = require("../controllers/carousel.js");
 const uploadCarousel = require("../middlewares/upload_carousel");
 const logo = require("../controllers/logo.js");
+const agenda = require("../controllers/agenda.js");
 
 module.exports = (app) => {
     var router = require("express").Router();
@@ -180,6 +181,19 @@ module.exports = (app) => {
     router.delete("/logo/:id", [authJwt.verifyToken, authJwt.isAdmin], logo.delete)
     // activate logo by id
     router.put("/logo/:id/:status", [authJwt.verifyToken, authJwt.isAdmin], logo.activate);
+
+    // create agenda
+    router.post("/agenda", [authJwt.verifyToken, authJwt.isAdmin], agenda.create)
+    // update agenda fields
+    router.put("/agenda/:id", [authJwt.verifyToken, authJwt.isAdmin], agenda.update);
+    // read all agenda
+    router.get("/agenda", [authJwt.verifyToken, authJwt.isAdmin], agenda.findAll)
+    // read agenda by id
+    router.get("/agenda/:id", [authJwt.verifyToken, authJwt.isAdmin], agenda.findOne)
+    // delete agenda by id
+    router.delete("/agenda/:id", [authJwt.verifyToken, authJwt.isAdmin], agenda.delete)
+    // activate agenda by id
+    router.put("/agenda/:id/:status", [authJwt.verifyToken, authJwt.isAdmin], agenda.activate);
 
 
     app.use("/admin", router);

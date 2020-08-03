@@ -58,7 +58,10 @@ module.exports = (sequelize, Sequelize) => {
         },
         confirmation_user_id: {
             type: Sequelize.INTEGER
-        }
+        },
+        confirmation_image: {
+            type: Sequelize.STRING,
+        },
     });
 
     return Event_registration;

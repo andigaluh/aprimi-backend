@@ -44,7 +44,7 @@ exports.findAll = (req, res) => {
         })
         .catch((err) => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving newss.",
+                message: err.message || "Some error occurred while retrieving Article.",
             });
         });
 };
@@ -72,7 +72,7 @@ exports.findAllFeatured = (req, res) => {
         })
         .catch((err) => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving newss.",
+                message: err.message || "Some error occurred while retrieving Article.",
             });
         });
 };
@@ -100,7 +100,7 @@ exports.findAllPublished = (req, res) => {
         })
         .catch((err) => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving newss.",
+                message: err.message || "Some error occurred while retrieving Article.",
             });
         });
 };
@@ -133,7 +133,7 @@ exports.create = async (req, res) => {
         })
         .catch((err) => {
             res.status(400).send({
-                message: err.message || "Some error occurred while creating the News.",
+                message: err.message || "Some error occurred while creating the Article.",
             });
         });
 };
@@ -148,17 +148,17 @@ exports.update = (req, res) => {
         .then((num) => {
             if (num == 1) {
                 res.send({
-                    message: "News was updated successfully.",
+                    message: "Article was updated successfully.",
                 });
             } else {
                 res.send({
-                    message: `Cannot update News with id=${id}. Maybe News was not found or req.body is empty!`,
+                    message: `Cannot update Article with id=${id}. Maybe Article was not found or req.body is empty!`,
                 });
             }
         })
         .catch((err) => {
             res.status(400).send({
-                message: "Error updating News with id=" + id,
+                message: "Error updating Article with id=" + id,
             });
         });
 };
@@ -184,7 +184,7 @@ exports.findOne = async (req, res) => {
         })
         .catch((err) => {
             res.status(400).send({
-                message: "Error retrieving News with id=" + id,
+                message: "Error retrieving Article with id=" + id,
             });
         });
 };
@@ -199,17 +199,17 @@ exports.delete = (req, res) => {
         .then((num) => {
             if (num == 1) {
                 res.send({
-                    message: "News was deleted successfully!",
+                    message: "Article was deleted successfully!",
                 });
             } else {
                 res.send({
-                    message: `Cannot delete News with id=${id}. Maybe News was not found!`,
+                    message: `Cannot delete Article with id=${id}. Maybe Article was not found!`,
                 });
             }
         })
         .catch((err) => {
             res.status(500).send({
-                message: "Could not delete News with id=" + id,
+                message: "Could not delete Article with id=" + id,
             });
         });
 };
@@ -270,23 +270,108 @@ exports.activate = (req, res) => {
             if (num == 1) {
                 if (status == 1) {
                     res.send({
-                        message: "News was active.",
+                        message: "Article was active.",
                     });
                 } else {
                     res.send({
-                        message: "News was non-active.",
+                        message: "Article was non-active.",
                     });
                 }
             } else {
                 res.send({
-                    message: `Cannot activate/non-activate News with id=${id}. Maybe News was not found or req.body is empty!`,
+                    message: `Cannot activate/non-activate Article with id=${id}. Maybe Article was not found or req.body is empty!`,
                 });
             }
         })
         .catch((err) => {
             res.status(400).send({
-                message: "Error activating News with id=" + id,
+                message: "Error activating Article with id=" + id,
             });
         });
 }
+
+// Read all newss
+exports.findAllByMe = (req, res) => {
+    const userId = req.userId 
+    const { page, size, title } = req.query;
+    const { limit, offset } = getPagination(page, size);
+    var condition = title ? { title: { [Op.like]: `%${title}%` }, created_user_id: userId } : { created_user_id: userId };
+
+    News.findAndCountAll({
+        where: condition,
+        limit,
+        offset,
+        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt"],
+        include: [{
+            model: News_category,
+            as: "news_category",
+            attributes: ["id", "title"]
+        }, {
+            model: users,
+            as: "created_user",
+            attributes: ["id", "name"]
+        }],
+        order: [['id', 'DESC']]
+
+    })
+        .then((data) => {
+            const response = getPagingData(data, page, limit);
+            res.send(response);
+        })
+        .catch((err) => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving Article.",
+            });
+        });
+};
+
+// Update and save an news
+exports.updateByMe = (req, res) => {
+    const id = req.params.id;
+
+    News.update(req.body, {
+        where: { id: id, created_user_id: req.userId },
+    })
+        .then((num) => {
+            if (num == 1) {
+                res.send({
+                    message: "Article was updated successfully.",
+                });
+            } else {
+                res.send({
+                    message: `Cannot update Article with id=${id}. Maybe Article was not found or req.body is empty!`,
+                });
+            }
+        })
+        .catch((err) => {
+            res.status(400).send({
+                message: "Error updating Article with id=" + id,
+            });
+        });
+};
+
+// Delete news by id
+exports.deleteByMe = (req, res) => {
+    const id = req.params.id;
+
+    News.destroy({
+        where: { id: id, created_user_id: req.userId},
+    })
+        .then((num) => {
+            if (num == 1) {
+                res.send({
+                    message: "Article was deleted successfully!",
+                });
+            } else {
+                res.send({
+                    message: `Cannot delete Article with id=${id}. Maybe Article was not found!`,
+                });
+            }
+        })
+        .catch((err) => {
+            res.status(500).send({
+                message: "Could not delete Article with id=" + id,
+            });
+        });
+};
 

@@ -159,6 +159,7 @@ require("./app/routes/logo")(app);
 require("./app/routes/role")(app);
 require("./app/routes/about")(app);
 require("./app/routes/whatwedo")(app);
+require("./app/routes/agenda")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
