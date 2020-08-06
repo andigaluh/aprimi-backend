@@ -4,7 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Company = db.company
 const getPagination = require("../middlewares/getPagination");
-
+const encDec = require("../middlewares/encDec");
+const config = require("../config/auth.config")
 const Op = db.Sequelize.Op;
 
 const getPagingData = (data, page, limit) => {
@@ -130,7 +131,28 @@ exports.findOne = async (req, res) => {
     ]
   })
     .then((data) => {
-      res.send(data);
+      var authorities = [];
+      data.getRoles().then((roles) => {
+        for (let i = 0; i < roles.length; i++) {
+          authorities.push(roles[i].name);
+        }
+
+        res.status(200).send({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          status: data.status,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+          company_id: data.company_id,
+          company:{
+            id : data.company.id,
+            name : data.company.name,
+          },
+          roles: authorities,
+        });
+      });
+      //res.send(data);
     })
     .catch((err) => {
       res.status(400).send({
@@ -378,3 +400,39 @@ exports.checkPassword = (req, res) => {
       });
     });
 }
+
+// Activate / non-activate user by id
+exports.activateByEmail = (req, res) => {
+  //const id = req.params.id;
+  const id = encDec.decryptedString(req.params.id);
+  const status = true;
+
+  User.update({
+    status: status
+  }, {
+    where: { id: id },
+  })
+    .then((num) => {
+      if (num == 1) {
+        if (status == true) {
+          /* res.send({
+            message: "User is active",
+          }); */
+          res.redirect(config.CORSURL + "/activation-user");
+        } else {
+          res.send({
+            message: "User is not-active",
+          });
+        }
+      } else {
+        res.send({
+          message: `Cannot update User with id=${id}. Maybe User was not found or req.params is empty!`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(400).send({
+        message: "Error updating User with id=" + id,
+      });
+    });
+};

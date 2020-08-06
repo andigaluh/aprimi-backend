@@ -1,11 +1,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const config = require("./app/config/auth.config")
 
 const app = express();
 
 var corsOptions = {
-  origin: "http://localhost:8081",
+  origin: config.CORSURL,
 };
 
 app.use(cors(corsOptions));
@@ -136,7 +137,6 @@ function initial() {
     code: "C1",
     title: "C1 – Regulatory Environment for Compensation Programs"
   })
-  
 }
 
 // simple route
@@ -162,7 +162,7 @@ require("./app/routes/whatwedo")(app);
 require("./app/routes/agenda")(app);
 
 // set port, listen for requests
-const PORT = process.env.PORT || 8080;
+const PORT = config.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });

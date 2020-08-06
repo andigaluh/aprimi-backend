@@ -7,9 +7,35 @@ const Op = db.Sequelize.Op;
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
+const mailsender = require("../middlewares/mailsender");
+const configMail = require("../config/mail.config");
+const encDec = require("../middlewares/encDec")
 
 exports.signup = (req, res) => {
+
   // Save User to Database
+
+  if (!req.body.name) {
+    res.status(400).send({
+      message: "Name can not be empty!"
+    });
+    return
+  }
+
+  if (!req.body.email) {
+    res.status(400).send({
+      message: "Email can not be empty!"
+    });
+    return;
+  }
+
+  if (!req.body.password) {
+    res.status(400).send({
+      message: "Password can not be empty!",
+    });
+    return;
+  }
+
   User.create({
     name: req.body.name,
     email: req.body.email,
@@ -27,18 +53,37 @@ exports.signup = (req, res) => {
           },
         }).then((roles) => {
           user.setRoles(roles).then(() => {
-            res.send({ message: "User was registered successfully!" });
+            res.send({ message: configMail.userRegistrationSuccessText });
           });
         });
       } else {
         user.setRoles([1]).then(() => {
-          res.send({ message: "User was registered successfully!" });
+          res.send({
+            message: configMail.userRegistrationSuccessText,
+          });
         });
       }
+
+      let encryptedId = encDec.encryptedString(user.id);
+      let urlActivation = config.URL + "/users/activate/" + encryptedId;
+
+      let textMsg = configMail.userRegistrationText.replace("{req.body.name}", req.body.name).replace("{req.body.email}", req.body.email).replace("{req.body.password}", req.body.password).replace("{urlActivation}", urlActivation);
+      
+      let htmlMsg = configMail.userRegistrationHTML.replace("{req.body.name}", req.body.name).replace("{req.body.email}", req.body.email).replace("{req.body.password}", req.body.password).replace("{urlActivation}", urlActivation).replace("{urlActivationText}", urlActivation);
+
+      mailsender({
+        to: req.body.email,
+        subject: configMail.userRegistrationSubject,
+        text: textMsg,
+        html: htmlMsg,
+      });
+
     })
     .catch((err) => {
       res.status(500).send({ message: err.message });
-    });
+    }); 
+
+
 };
 
 exports.signin = (req, res) => {

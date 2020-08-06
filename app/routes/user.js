@@ -25,5 +25,8 @@ module.exports = (app) => {
    // Retrieve a single User with id
   router.post("/checkPassword", [authJwt.verifyToken], users.checkPassword);
 
+  // Activaate a user by Email
+  router.get("/activate/:id", users.activateByEmail)
+
   app.use("/users", router);
 };
