@@ -25,7 +25,7 @@ exports.findAll = (req, res) => {
         where: condition,
         limit,
         offset,
-        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt"],
+        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt", "thumbnail"],
         include: [{
             model: News_category,
             as: "news_category",
@@ -53,7 +53,7 @@ exports.findAll = (req, res) => {
 exports.findAllFeatured = (req, res) => {
     News.findAll({
         where: {is_publish: 1, is_featured: 1},
-        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt"],
+        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt", "thumbnail"],
         include: [{
             model: News_category,
             as: "news_category",
@@ -81,7 +81,7 @@ exports.findAllFeatured = (req, res) => {
 exports.findAllPublished = (req, res) => {
     News.findAll({
         where: {is_publish: 1},
-        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt"],
+        attributes: ["id", "title", "headline", "content", "is_publish", "is_featured", "createdAt", "thumbnail"],
         include: [{
             model: News_category,
             as: "news_category",
