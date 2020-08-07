@@ -25,6 +25,7 @@ yarn-error.log*
 
 resources/static/assets/tmp/*
 resources/static/assets/uploads/carousel/*
+resources/static/assets/uploads/confirmation/thumbnail/*
 resources/static/assets/uploads/event/files/*
 resources/static/assets/uploads/event/thumbnail/*
 resources/static/assets/uploads/logo/*
