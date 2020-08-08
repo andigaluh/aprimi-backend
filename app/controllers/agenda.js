@@ -162,14 +162,14 @@ exports.findOne = async (req, res) => {
     const id = req.params.id;
 
     Agenda.findByPk(id, {
-        attributes: ["id", "title", "start_date", "end_date", "content", "is_publish", "is_featured", "createdAt", "created_user_id", "role_id"],
+        attributes: ["id", "title", "start_date", "end_date", "content", "is_publish", "is_featured", "createdAt", "created_user_id"],
     })
         .then((data) => {
             res.send(data);
         })
         .catch((err) => {
             res.status(400).send({
-                message: "Error retrieving Agenda with id=" + id,
+              message: "error retriveing agenda with id=" + id + " error=" + err,
             });
         });
 };
