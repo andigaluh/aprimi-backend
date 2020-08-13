@@ -36,5 +36,8 @@ module.exports = (app) => {
     // Update image confirmation by id
     router.post("/confirmation/:id/thumbnail", [authJwt.verifyToken, upload.single("confirmation_image")], event_registration.confimation);
 
+    // Read my registration by id
+    router.get("/registrationbyevent/:id", [authJwt.verifyToken], event_registration.Registrationbyeventanduser);
+
     app.use("/event", router);
 };

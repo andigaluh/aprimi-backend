@@ -4,6 +4,7 @@ const { users } = require("../models");
 const Event_registration = db.event_registration;
 const Exam = db.exam;
 const Event = db.event;
+const User = db.users;
 const nodemailer = require('nodemailer')
 
 const Op = db.Sequelize.Op;
@@ -239,6 +240,11 @@ exports.allRegistrationbyevent = (req, res) => {
                 model: Exam,
                 as: "exam",
                 attributes: ["id", "code", "title"]
+            },
+            {
+                model: User,
+                as: "user",
+                attributes: ["id", "name", "email"]
             }
         ]
     }).then((result) => {
@@ -266,6 +272,11 @@ exports.RegistrationbyId = (req, res) => {
                 model: Exam,
                 as: "exam",
                 attributes: ["id", "code", "title"]
+            },
+            {
+                model: User,
+                as: "user",
+                attributes: ["id", "name", "email"]
             }
         ]
     }).then((result) => {
@@ -380,4 +391,33 @@ exports.confimation = (req, res) => {
             .status(400)
             .send(`Error when trying upload images: ${error}`);
     }
+};
+
+exports.Registrationbyeventanduser = (req, res) => {
+    const id = req.params.id
+    const userId = req.userId
+    Event_registration.findAndCountAll({
+        where: {
+            event_id: id,
+            user_id: userId
+        },
+        include: [
+            {
+                model: Event,
+                as: "event",
+                attributes: ["id", "title", "is_publish"]
+            },
+            {
+                model: Exam,
+                as: "exam",
+                attributes: ["id", "code", "title"]
+            }
+        ]
+    }).then((result) => {
+        res.send(result)
+    }).catch((error) => {
+        res.status(500).send({
+            message: error.message || "Some error occurred while retrieving myRegistration.",
+        });
+    })
 };
