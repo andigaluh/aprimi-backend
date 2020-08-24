@@ -18,7 +18,11 @@ module.exports = (sequelize, Sequelize) => {
     },
     accesstoken: {
       type: Sequelize.TEXT
-    }
+    },
+    last_signin: {
+      type: Sequelize.DATE,
+      allowNull: false,
+    },
   });
 
   return User;

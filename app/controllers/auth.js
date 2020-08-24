@@ -123,7 +123,7 @@ exports.signin = (req, res) => {
           authorities.push("ROLE_" + roles[i].name.toUpperCase());
         }
                   
-        User.update({ accesstoken: token }, { where: { id: user.id }}).then((num) => {
+        User.update({ accesstoken: token, last_signin: Date() }, { where: { id: user.id }}).then((num) => {
           console.log('update accessToken : ' + num);
         })
 
@@ -133,6 +133,7 @@ exports.signin = (req, res) => {
           email: user.email,
           roles: authorities,
           accessToken: token,
+          last_signin: Date()
         });
       });
     })
