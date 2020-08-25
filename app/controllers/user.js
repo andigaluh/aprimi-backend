@@ -8,13 +8,16 @@ const encDec = require("../middlewares/encDec");
 const config = require("../config/auth.config")
 const Op = db.Sequelize.Op;
 
+const mailsender = require("../middlewares/mailsender");
+const configMail = require("../config/mail.config");
+
 const getPagingData = (data, page, limit) => {
   const { count: totalItems, rows: items } = data;
   const currentPage = page ? +page : 0;
   const totalPages = Math.ceil(totalItems / limit);
 
   return { totalItems, items, totalPages, currentPage };
-}; 
+};
 
 // Read all users
 exports.findAll = (req, res) => {
@@ -33,7 +36,7 @@ exports.findAll = (req, res) => {
         as: "company",
       },
     ],
-    order: [['id','DESC']]
+    order: [['id', 'DESC']]
   })
     .then((data) => {
       const response = getPagingData(data, page, limit);
@@ -48,48 +51,48 @@ exports.findAll = (req, res) => {
 
 // Create and Save a new User
 exports.create = async (req, res) => {
-    // Validate request
-    if (!req.body.email) {
-        res.status(400).send({
-            message: "Email can not be empty!"
-        });
-        return;
-    }
+  // Validate request
+  if (!req.body.email) {
+    res.status(400).send({
+      message: "Email can not be empty!"
+    });
+    return;
+  }
 
-    if (!req.body.name) {
-        res.status(400).send({
-            message: "Name can not be empty!"
-        });
-        return
-    }
+  if (!req.body.name) {
+    res.status(400).send({
+      message: "Name can not be empty!"
+    });
+    return
+  }
 
-    if (!req.body.password) {
+  if (!req.body.password) {
+    res.status(400).send({
+      message: "Password can not be empty!",
+    });
+    return;
+  }
+
+  // Create a user
+  const user = {
+    email: req.body.email,
+    name: req.body.name,
+    password: await bcrypt.hash(req.body.password, 8),
+    //published: req.body.published ? req.body.published : false
+  };
+
+  // Save user in the database
+  User.create(user)
+    .then(data => {
+      res.send(data);
+    })
+    .catch(err => {
       res.status(400).send({
-        message: "Password can not be empty!",
+        message:
+          err.message || "Some error occurred while creating the User."
       });
-      return;
-    }
-
-    // Create a user
-    const user = {
-      email: req.body.email,
-      name: req.body.name,
-      password: await bcrypt.hash(req.body.password, 8),
-      //published: req.body.published ? req.body.published : false
-    };
-
-    // Save user in the database
-    User.create(user)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(400).send({
-                message:
-                    err.message || "Some error occurred while creating the User."
-            });
-        });
-}; 
+    });
+};
 
 // Update and save an user
 exports.update = (req, res) => {
@@ -120,9 +123,9 @@ exports.update = (req, res) => {
 // Read user by id
 exports.findOne = async (req, res) => {
   const id = req.params.id;
-  
+
   User.findByPk(id, {
-    attributes: ["id", "name", "email", "status", "createdAt", "updatedAt","company_id"],
+    attributes: ["id", "name", "email", "status", "createdAt", "updatedAt", "company_id"],
     include: [
       {
         model: Company,
@@ -145,9 +148,9 @@ exports.findOne = async (req, res) => {
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
           company_id: data.company_id,
-          company:{
-            id : data.company.id,
-            name : data.company.name,
+          company: {
+            id: data.company.id,
+            name: data.company.name,
           },
           roles: authorities,
         });
@@ -164,7 +167,7 @@ exports.findOne = async (req, res) => {
 // Read user by login
 exports.findMe = async (req, res) => {
   const id = req.userId;
-  
+
   User.findByPk(id, {
     attributes: ["id", "name", "email", "status", "createdAt", "updatedAt", "company_id"],
     include: [
@@ -389,16 +392,16 @@ exports.checkPassword = (req, res) => {
         message: "Invalid current password!",
       });
     }
-      res.send({
-        error: 0,
-        status: 1,
-        message: "Valid password!",
-      });
-    }).catch((err) => {
-      res.status(400).send({
-        message: err,
-      });
+    res.send({
+      error: 0,
+      status: 1,
+      message: "Valid password!",
     });
+  }).catch((err) => {
+    res.status(400).send({
+      message: err,
+    });
+  });
 }
 
 // Activate / non-activate user by id
@@ -415,9 +418,6 @@ exports.activateByEmail = (req, res) => {
     .then((num) => {
       if (num == 1) {
         if (status == true) {
-          /* res.send({
-            message: "User is active",
-          }); */
           res.redirect(config.CORSURL + "/activation-user");
         } else {
           res.send({
@@ -433,6 +433,92 @@ exports.activateByEmail = (req, res) => {
     .catch((err) => {
       res.status(400).send({
         message: "Error updating User with id=" + id,
+      });
+    });
+};
+
+exports.findByEmail = (req, res) => {
+  const email = req.body.email;
+  User.findOne({
+    where: { email },
+    order: [['id', 'DESC']],
+    attributes: ["id", "name", "email"],
+  })
+    .then((data) => {
+      if (data) {
+        res.send({ status: true, message: "verification link has been send to your email", content: data });
+        let encryptedId = encDec.encryptedString(data.email);
+        let urlActivation = config.CORSURL + "/reset-password/" + encryptedId;
+
+        let textMsg = configMail.userForgetPasswordText.replace("{req.body.name}", data.name).replace("{urlActivation}", urlActivation);
+
+        let htmlMsg = configMail.userForgetPasswordHTML.replace("{req.body.name}", data.name).replace("{urlActivation}", urlActivation).replace("{urlActivationText}", urlActivation);
+
+        mailsender({
+          to: req.body.email,
+          subject: configMail.userForgetPasswordSubject,
+          text: textMsg,
+          html: htmlMsg,
+        });
+
+      } else {
+        res.send({ status: false, message: "email not found", content: "" });
+      }
+
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving agendas.",
+      });
+    });
+};
+
+exports.findEmailEnc = (req, res) => {
+  const email = encDec.decryptedString(req.params.id);
+
+  User.findOne({
+    where: { email },
+    order: [['id', 'DESC']],
+    attributes: ["id", "name", "email"],
+  })
+    .then((data) => {
+      if (data) {
+        res.send({ status: true, message: "valid email", content: data });
+      } else {
+        res.send({ status: false, message: "email not found", content: "" });
+      }
+
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving agendas.",
+      });
+    });
+}
+
+exports.updatePasswordByEmail = (req, res) => {
+  const email = req.body.email;
+
+  User.update(
+    { password: bcrypt.hashSync(req.body.password, 8) },
+    {
+      where: { email },
+    }
+  )
+    .then((num) => {
+      if (num == 1) {
+        res.send({
+          message: `Password was updated successfully. You can login / sign in now`,
+        });
+      } else {
+        res.send({
+          message: `Cannot update User with email=${email}. Maybe User was not found or req.body is empty!`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(400).send({
+        message: "Error updating User with email=" + email,
       });
     });
 };

@@ -26,7 +26,16 @@ module.exports = (app) => {
   router.post("/checkPassword", [authJwt.verifyToken], users.checkPassword);
 
   // Activaate a user by Email
-  router.get("/activate/:id", users.activateByEmail)
+  router.get("/activate/:id", users.activateByEmail);
+
+  // check valid email
+  router.post("/checkEmail", users.findByEmail);
+
+  // check valid email by encryption id
+  router.get("/findEmailEnc/:id", users.findEmailEnc);
+
+  //update reset-password by email
+  router.put("/updatePasswordByEmail", users.updatePasswordByEmail);
 
   app.use("/users", router);
 };

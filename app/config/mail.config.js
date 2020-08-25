@@ -28,4 +28,18 @@ module.exports = {
     `,
   userRegistrationSuccessText:
     "Your data is successfully submited! The activation link has been sent to your email.",
+  userForgetPasswordSubject: "aprimi.org: Reset Password",
+  userForgetPasswordText: `Hi {req.body.name},\n 
+    To reset your password account, please click the link below : \n
+    {urlActivation} \n \n \n
+    Warm regards,\n
+    aprimi.org
+    `,
+  userForgetPasswordHTML: `<h4>Hi {req.body.name}, </h4>
+    <p>To reset your password account, please click the link below :
+    <hr/>
+    <p>Click this <a href="{urlActivation}">LINK</a> to reset your password<br/>
+    Or open this url on your browser {urlActivationText}
+    </p>
+    `,
 };
