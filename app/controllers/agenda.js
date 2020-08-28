@@ -4,8 +4,10 @@ const { users } = require("../models");
 const Agenda = db.agenda;
 const Role = db.role;
 const getPagination = require("../middlewares/getPagination");
+const moment = require("moment")
 
 const Op = db.Sequelize.Op;
+
 
 const getPagingData = (data, page, limit) => {
     const { count: totalItems, rows: items } = data;
@@ -44,7 +46,7 @@ exports.findAllFeatured = (req, res) => {
         where: { is_featured: 1, is_publish: 1 },
         order: [['id', 'DESC']]
     })
-        .then((data) => {
+        .then((data) => {           
             res.send(data);
         })
         .catch((err) => {
@@ -58,7 +60,13 @@ exports.findAllFeatured = (req, res) => {
 exports.findAllPublished = (req, res) => {
     Agenda.findAll({
         where: { is_publish: 1 },
-        order: [['id', 'DESC']]
+        order: [['id', 'DESC']],
+        attributes: [
+            'id',
+            'title',
+            [db.Sequelize.fn('date_format', db.Sequelize.col('start_date'), '%Y-%m-%d'), 'start_date'],
+            'content'
+        ]
     })
     .then((data) => {
         res.send(data);

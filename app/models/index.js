@@ -14,7 +14,7 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     idle: dbConfig.pool.idle,
   },
   timezone: "+07:00",
-  logging: true,
+  logging: false,
 });
 
 const db = {};
