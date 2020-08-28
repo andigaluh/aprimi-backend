@@ -4,7 +4,6 @@ const { users } = require("../models");
 const Agenda = db.agenda;
 const Role = db.role;
 const getPagination = require("../middlewares/getPagination");
-const moment = require("moment")
 
 const Op = db.Sequelize.Op;
 
