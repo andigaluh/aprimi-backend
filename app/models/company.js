@@ -53,6 +53,18 @@ module.exports = (sequelize, Sequelize) => {
         updated_user_id: {
             type: Sequelize.INTEGER,
         },
+        confirmation_file: {
+            type: Sequelize.STRING,
+            allowNull: false
+        },
+        confirmation_date: {
+            type: Sequelize.DATE,
+            allowNull: false,
+        },
+        confirmation_status: {
+            type: Sequelize.BOOLEAN,
+            defaultValue: false
+        },
     });
 
     return Company;

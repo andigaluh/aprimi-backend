@@ -31,4 +31,6 @@ resources/static/assets/uploads/event/thumbnail/*
 resources/static/assets/uploads/logo/*
 resources/static/assets/uploads/media/*
 resources/static/assets/uploads/news/thumbnail/*
+resources/static/assets/uploads/committee/*
+resources/static/assets/uploads/membership/*
 app/config/*

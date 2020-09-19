@@ -13,7 +13,7 @@ const getPagingData = (data, page, limit) => {
     const totalPages = Math.ceil(totalItems / limit);
 
     return { totalItems, items, totalPages, currentPage };
-}; 
+};
 
 // Read all membership
 exports.findAll = (req, res) => {
@@ -129,19 +129,17 @@ exports.findOne = async (req, res) => {
     Company.findByPk(id, {
         include: [
             {
-            model: User,
-            as: "created_user",
-            attributes: ["id", "name", "email"]
-        }]
-    })
-        .then((data) => {
-            res.send(data);
-        })
-        .catch((err) => {
-            res.status(400).send({
-                message: "Error retrieving Company with id=" + id,
-            });
+                model: User,
+                as: "created_user",
+                attributes: ["id", "name", "email"]
+            }]
+    }).then((data) => {
+        res.send(data);
+    }).catch((err) => {
+        res.status(400).send({
+            message: err.message || "Error retrieving Company with id=" + id,
         });
+    });
 };
 
 // Update and save an company
@@ -193,6 +191,57 @@ exports.delete = (req, res) => {
             });
         });
 };
+
+exports.upload = async (req, res) => {
+    try {
+        const splitUrl = req.url.split("/")
+
+        if (req.file == undefined) {
+            return res.send(`You must select a file`)
+        }
+
+        const id = req.body.id;
+
+        Company.update(
+            {
+                is_active: true,
+                confirmation_status: true,
+                confirmation_date: new Date(),
+                confirmation_file: req.file.filename
+            }, {
+            where: { id: id },
+        })
+            .then((num) => {
+                if (num == 1) {
+                    res.send({
+                        message: "File has been uploaded.",
+                    });
+                } else {
+                    res.send({
+                        message: `Cannot update Company with id=${id}. Maybe Company was not found or req.body is empty!`,
+                    });
+                }
+            })
+            .catch((err) => {
+                res.status(400).send({
+                    message: "Error updating Company with id=" + id,
+                });
+            });
+        /* const uploaded = await Company.create({
+            is_active: true,
+            confirmation_status: true,
+            confirmation_date: new Date(),
+            confirmation_file: req.file.filename
+        }); */
+
+        return res.send(`File has been uploaded.`);
+
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send(`Error when trying upload images: ${error}`);
+    }
+}
 
 
 
