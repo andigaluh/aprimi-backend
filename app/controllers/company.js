@@ -70,7 +70,6 @@ exports.create = async (req, res) => {
         year_registered: req.body.year_registered,
         created_user_id: req.userId,
         updated_user_id: req.userId,
-
     };
 
     // Save company in the database

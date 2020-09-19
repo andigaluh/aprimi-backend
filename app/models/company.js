@@ -54,16 +54,13 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.INTEGER,
         },
         confirmation_file: {
-            type: Sequelize.STRING,
-            allowNull: false
+            type: Sequelize.STRING
         },
         confirmation_date: {
-            type: Sequelize.DATE,
-            allowNull: false,
+            type: Sequelize.DATE
         },
         confirmation_status: {
-            type: Sequelize.BOOLEAN,
-            defaultValue: false
+            type: Sequelize.BOOLEAN
         },
     });
 
