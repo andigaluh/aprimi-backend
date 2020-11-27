@@ -147,6 +147,8 @@ exports.signin = (req, res) => {
           id: user.id,
           name: user.name,
           email: user.email,
+          title: user.title,
+          phone: user.phone,
           roles: authorities,
           accessToken: token,
           last_signin: Date()
