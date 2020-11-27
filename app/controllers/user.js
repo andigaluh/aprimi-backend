@@ -169,7 +169,7 @@ exports.findMe = async (req, res) => {
   const id = req.userId;
 
   User.findByPk(id, {
-    attributes: ["id", "name", "email", "status", "createdAt", "updatedAt", "company_id"],
+    attributes: ["id", "name", "email", "status", "createdAt", "updatedAt", "company_id", "title", "phone"],
     include: [
       {
         model: Company,

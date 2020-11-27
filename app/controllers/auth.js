@@ -36,9 +36,25 @@ exports.signup = (req, res) => {
     return;
   }
 
+  if (!req.body.title) {
+    res.status(400).send({
+      message: "Title / Position can not be empty!",
+    });
+    return;
+  }
+
+  if (!req.body.phone) {
+    res.status(400).send({
+      message: "Mobile / Phone can not be empty!",
+    });
+    return;
+  }
+
   User.create({
     name: req.body.name,
     email: req.body.email,
+    title: req.body.title,
+    phone: req.body.phone,
     password: bcrypt.hashSync(req.body.password, 8),
     status: req.body.status,
     company_id: req.body.company_id

@@ -21,7 +21,15 @@ module.exports = (sequelize, Sequelize) => {
     },
     last_signin: {
       type: Sequelize.DATE,
-      allowNull: false,
+      allowNull: true,
+    },
+    title: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    phone: {
+      type: Sequelize.STRING,
+      allowNull: true,
     },
   });
 
