@@ -54,6 +54,7 @@ exports.create = async (req, res) => {
         report_date: req.body.report_date,
         report_job: req.body.report_job,
         report_email: req.body.report_email,
+        report_phone: req.body.report_phone,
         report_fax: req.body.report_fax,
         report_address: req.body.reporaddressax,
         invoice_name: req.body.invoice_name,
